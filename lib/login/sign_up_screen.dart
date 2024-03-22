@@ -27,7 +27,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           padding: const EdgeInsets.all(48.0),
           child: Column(
             children: [
-              const Text("사케사케\n가입을 환영합니다",
+              const Text("사케사게\n가입을 환영합니다",
                 style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
