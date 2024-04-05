@@ -54,13 +54,25 @@ class _HomeWidgetState extends State<HomeWidget> {
             child: Column(
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("카테고리"),
+                    Text("카테고리",style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18
+                    ),),
                     TextButton(
                       onPressed: (){},
                       child: Text("더보기"))
                   ],
                 ),
+                SizedBox(
+                  height: 16,
+                ),
+                //TODO: 카테고리 목록을 받아오는 위젯구현
+                Container(
+                  height: 400,
+                  color:Colors.black,
+                )
               ],
             ),
           )

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sakesage/home/DeliveryScreen.dart';
+import 'package:sakesage/home/PickupScreen.dart';
 import 'package:sakesage/home/widgets/home_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -24,19 +26,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icons.logout
               ),
           ),
-          IconButton(
-              onPressed: (){},
-              icon: const Icon(
-                  Icons.search,
-              ),
-          ),
+          if (_menuIndex == 0)
+            IconButton(
+                onPressed: (){},
+                icon: const Icon(
+                    Icons.search,
+                ),
+            )
         ],
       ),
       body: IndexedStack(
         index: _menuIndex,
         children: [
           HomeWidget(),
-          Container(color: Colors.white,),
+          PickupScreen(),
+          DeliveryScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -51,8 +55,16 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.store_outlined),
               label: "홈",
           ),
+          NavigationDestination(
+            icon: Icon(Icons.directions_walk_outlined),
+            label: "픽업하기",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.directions_bike_outlined),
+            label: "배달받기",
+          ),
           NavigationDestination(icon: Icon(Icons.person),
-              label: "마이페이지",
+            label: "마이페이지",
           ),
         ],
       ),

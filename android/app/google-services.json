@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "938861736409",
+    "project_id": "sakesage-c8e86",
+    "storage_bucket": "sakesage-c8e86.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:938861736409:android:6960f639c40cb901b029c8",
+        "android_client_info": {
+          "package_name": "com.sakesage.sakesage"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "938861736409-5mf239fhi5kkppos70q0kaa2oo8cm2pe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQdw97zqOq-yFXCTOBzXSx71eMRRPK9L0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "938861736409-5mf239fhi5kkppos70q0kaa2oo8cm2pe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
