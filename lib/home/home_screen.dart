@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sakesage/home/DeliveryScreen.dart';
-import 'package:sakesage/home/PickupScreen.dart';
+import 'package:sakesage/home/GoogleMap.dart';
 import 'package:sakesage/home/widgets/home_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _menuIndex,
         children: [
           HomeWidget(),
-          PickupScreen(),
+          GoogleMapScreen(),
           DeliveryScreen(),
         ],
       ),
