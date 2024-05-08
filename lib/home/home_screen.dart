@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sakesage/home/DeliveryScreen.dart';
 import 'package:sakesage/home/GoogleMap.dart';
+import 'package:sakesage/home/Product_list.dart';
 import 'package:sakesage/home/widgets/home_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -41,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
           HomeWidget(),
           GoogleMapScreen(),
           DeliveryScreen(),
+          Product_list_Screen(), //임시
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -64,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
             label: "배달받기",
           ),
           NavigationDestination(icon: Icon(Icons.person),
-            label: "마이페이지",
+            label: "마이페이지(임시로 제품 리스트)",
           ),
         ],
       ),

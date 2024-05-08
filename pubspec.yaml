@@ -39,17 +39,17 @@ dependencies:
   intl: ^0.19.0
   dots_indicator: ^3.0.0
 
-  #freezed_annotation: ^2.4.1
+  freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
 
   flutter_image_compress: ^2.2.0
 
   firebase_core: ^2.28.0
   firebase_auth: ^4.19.0
-  #cloud_firestore: ^4.16.0
+  cloud_firestore: ^4.16.0
   google_maps_flutter: ^2.6.0
   location: ^6.0.1
-  #firebase_storage: ^11.7.0
+  firebase_storage: ^11.7.0
 
 dev_dependencies:
   flutter_test:

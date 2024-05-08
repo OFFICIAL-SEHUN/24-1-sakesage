@@ -70,9 +70,29 @@ class _HomeWidgetState extends State<HomeWidget> {
                 ),
                 //TODO: 카테고리 목록을 받아오는 위젯구현
                 Container(
-                  height: 400,
-                  color:Colors.black,
-                )
+                  height: 180,
+                  color:Colors.orange,
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 4,
+                      mainAxisSpacing: 4,
+                    ),
+                    itemCount: 8,
+
+                    itemBuilder: (BuildContext context, int index){
+                      return CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Colors.white,
+                        child: Text(
+                          'Item $index',
+                          style: TextStyle(color:Colors.black),
+                        ),
+                      );
+                    },
+                  //TODO: 추후 firebase querry (배달앱-firebase, 홈화면구현)
+                  ),
+                ),
               ],
             ),
           )
