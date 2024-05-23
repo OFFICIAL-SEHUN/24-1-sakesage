@@ -10,7 +10,7 @@ class GoogleMapScreen extends StatefulWidget {
 
 class _GoogleMapScreenState extends State<GoogleMapScreen> {
   late GoogleMapController mapController;
-  final LatLng _center = const LatLng(37.7749, -122.4194); // 초기 중심 좌표
+  final LatLng _center = const LatLng(36.3066420,127.3426130 ); // 초기 중심 좌표
   final Set<Marker> _markers = {}; // 마커 집합
 
   // 지도가 준비되면 호출되는 콜백 함수
@@ -23,8 +23,8 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
           markerId: MarkerId("marker_1"),
           position: _center,
           infoWindow: InfoWindow(
-            title: 'San Francisco',
-            snippet: 'This is San Francisco!',
+            title: 'Konyang University Hospital',
+            snippet: 'This is Konyang University Hospital!',
           ),
         ),
       );
@@ -42,7 +42,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
           target: _center,
-          zoom: 11.0, // 초기 줌 레벨
+          zoom: 15.0, // 초기 줌 레벨
         ),
         markers: _markers,
       ),

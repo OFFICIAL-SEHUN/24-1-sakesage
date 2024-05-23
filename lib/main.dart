@@ -5,11 +5,15 @@ import 'package:sakesage/home/Product_list.dart';
 import 'package:sakesage/home/home_screen.dart';
 import 'package:sakesage/login/login_screen.dart';
 import 'package:sakesage/login/sign_up_screen.dart';
+import 'package:mysql_client/mysql_client.dart';
+import 'package:sakesage/DatabaseHelper.dart';
 
+void main() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    var db = DatabaseHelper();
+    await db.connect();
 
-
-void main() {
-  runApp(MyApp());
+    runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
