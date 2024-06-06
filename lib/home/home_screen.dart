@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
             label: "배달받기",
           ),
           NavigationDestination(icon: Icon(Icons.person),
-            label: "마이페이지(임시로 제품 리스트)",
+            label: "마이페이지",
           ),
         ],
       ),
