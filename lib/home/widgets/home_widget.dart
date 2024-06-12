@@ -1,5 +1,6 @@
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:sakesage/DatabaseHelper.dart';
 import 'dart:convert'; // 이미지 데이터 변환에 필요
 
@@ -29,24 +30,38 @@ class _HomeWidgetState extends State<HomeWidget> {
 
   final DatabaseHelper db = DatabaseHelper();
 
+  late YoutubePlayerController _youtubeController;
+
   @override
   void initState() {
     super.initState();
     fetchPopularItems();
+    _initializeYoutubeController();
   }
 
-  Future<void> fetchPopularItems() async {
-    List<Map<String, dynamic>> fetchedData = await db.getData();
-    setState(() {
-      popularItems = fetchedData.length > 3 ? fetchedData.sublist(2,4):[];
-      isLoading = false;
-    });
+  void _initializeYoutubeController() {
+    _youtubeController = YoutubePlayerController(
+      initialVideoId: 'oboGO0705CM', // 여기에 원하는 유튜브 동영상 ID를 입력하세요.
+      flags: YoutubePlayerFlags(
+        autoPlay: false,
+        mute: false,
+      ),
+    );
   }
 
   @override
   void dispose() {
     pageController.dispose();
+    _youtubeController.dispose();
     super.dispose();
+  }
+
+  Future<void> fetchPopularItems() async {
+    List<Map<String, dynamic>> fetchedData = await db.getData();
+    setState(() {
+      popularItems = fetchedData.length > 3 ? fetchedData.sublist(2, 4) : [];
+      isLoading = false;
+    });
   }
 
   @override
@@ -192,73 +207,21 @@ class _HomeWidgetState extends State<HomeWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "최고 인기 상품",
+                  "사케에 대해서!",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
                 ),
                 SizedBox(height: 10),
-                isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    : GridView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 0.75,
-                  ),
-                  itemCount: 2,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              child: popularItems[index]['image_url'] != null
-                                  ? ClipRRect(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(10.0),
-                                  topRight: Radius.circular(10.0),
-                                ),
-                                child: Image.network(
-                                  popularItems[index]['image_url'],
-                                  width: double.infinity,
-                                  height: 150.0,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                                  : Container(
-                                height: 150.0,
-                                color: Colors.grey[200],
-                                child: Center(
-                                  child: Icon(
-                                    Icons.image,
-                                    size: 50,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              popularItems[index]['title'],
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('₩${popularItems[index]['price']}'),
-                          ),
-                        ],
-                      ),
-                    );
+                YoutubePlayer(
+                  controller: _youtubeController,
+                  showVideoProgressIndicator: true,
+                  progressIndicatorColor: Colors.red,
+                  onReady: () {
+                    _youtubeController.addListener(() {
+                      // 유튜브 컨트롤러 상태를 감지하고 필요 시 처리할 로직 추가
+                    });
                   },
                 ),
               ],

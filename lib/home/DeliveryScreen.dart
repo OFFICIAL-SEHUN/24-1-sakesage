@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sakesage/DatabaseHelper.dart';
+import 'package:sakesage/home/ProductDetail.dart'; // 수정된 부분: ProductDetail.dart 파일을 import
 
 class DeliveryScreen extends StatefulWidget {
   @override
@@ -50,8 +51,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '',
-                  style: TextStyle(fontSize: 16),
+                  '   모든 사케 리스트',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 DropdownButton<String>(
                   value: _selectedSort,
@@ -86,61 +87,71 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 ),
                 itemCount: data.length,
                 itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 150.0,
-                          width: double.infinity,
-                          child: data[index]['image_url'] != null
-                              ? ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(10.0),
-                              topRight: Radius.circular(10.0),
-                            ),
-                            child: Image.network(
-                              data[index]['image_url'],
-                              width: double.infinity,
-                              height: 150.0,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                              : Container(
-                            height: 150.0,
-                            color: Colors.grey[200],
-                            child: Center(
-                              child: Icon(
-                                Icons.image,
-                                size: 50,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
+                  return GestureDetector( // 수정된 부분: GestureDetector로 감싸기
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetail(data[index]), // 수정된 부분: ProductDetail 화면으로 이동
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                data[index]['title'],
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16.0,
+                      );
+                    },
+                    child: Card(
+                      elevation: 4.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 150.0,
+                            width: double.infinity,
+                            child: data[index]['image_url'] != null
+                                ? ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(10.0),
+                                topRight: Radius.circular(10.0),
+                              ),
+                              child: Image.network(
+                                data[index]['image_url'],
+                                width: double.infinity,
+                                height: 150.0,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                                : Container(
+                              height: 150.0,
+                              color: Colors.grey[200],
+                              child: Center(
+                                child: Icon(
+                                  Icons.image,
+                                  size: 50,
+                                  color: Colors.grey,
                                 ),
                               ),
-                              SizedBox(height: 4.0),
-                              Text('${data[index]['price']}'),
-                              Text('${data[index]['site_name']}'),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  data[index]['title'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+                                SizedBox(height: 4.0),
+                                Text('${data[index]['price']}'),
+                                Text('${data[index]['site_name']}'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
