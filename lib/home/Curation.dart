@@ -22,7 +22,7 @@ class _CurationScreenState extends State<CurationScreen> with SingleTickerProvid
   String? _selectedBody;
   String? _selectedAroma;
 
-  int _currentQuestionIndex = 0;
+  int _currentQuestionIndex = -1; // Initially set to -1
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -88,8 +88,16 @@ class _CurationScreenState extends State<CurationScreen> with SingleTickerProvid
       _selectedFlavor = null;
       _selectedBody = null;
       _selectedAroma = null;
-      _currentQuestionIndex = 0;
+      _currentQuestionIndex = -1; // Reset to -1
       _curatedSake = [];
+    });
+    _controller.reset();
+    _controller.forward();
+  }
+
+  void _startCuration() {
+    setState(() {
+      _currentQuestionIndex = 0; // Start with the first question
     });
     _controller.reset();
     _controller.forward();
@@ -163,11 +171,38 @@ class _CurationScreenState extends State<CurationScreen> with SingleTickerProvid
     );
   }
 
+  void _showStartDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('사케 큐레이션 시작'),
+          content: Text('사케 큐레이션을 시작하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _startCuration();
+              },
+              child: Text('예'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('아니오'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     List<String> options = [];
     String question = '';
-    if (_currentQuestionIndex <= 3) {
+    if (_currentQuestionIndex >= 0 && _currentQuestionIndex <= 3) {
       switch (_currentQuestionIndex) {
         case 0:
           options = _recipients;
@@ -190,7 +225,6 @@ class _CurationScreenState extends State<CurationScreen> with SingleTickerProvid
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Curated Sake'),
         centerTitle: true,
         actions: [
           ElevatedButton.icon(
@@ -209,31 +243,39 @@ class _CurationScreenState extends State<CurationScreen> with SingleTickerProvid
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: ListView(
-              children: [
-                ..._buildPreviousSelections(),
-                if (_currentQuestionIndex <= 3)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Text(
-                        question,
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          if (_currentQuestionIndex == -1) // Show start button if no question is active
+            Center(
+              child: ElevatedButton(
+                onPressed: _showStartDialog,
+                child: Text('사케 큐레이션 시작'),
+              ),
+            ),
+          if (_currentQuestionIndex >= 0) // Show questions if active
+            Expanded(
+              child: ListView(
+                children: [
+                  ..._buildPreviousSelections(),
+                  if (_currentQuestionIndex <= 3)
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Text(
+                          question,
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
-                  ),
-                if (_currentQuestionIndex <= 3)
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: _buildOptions(options, _currentQuestionIndex),
+                  if (_currentQuestionIndex <= 3)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _buildOptions(options, _currentQuestionIndex),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -245,13 +287,13 @@ class _CurationScreenState extends State<CurationScreen> with SingleTickerProvid
       selections.add(_buildChatBubble('누구에게 선물할 사케인가요?', '$_selectedRecipient에게 선물하고싶으시군요!'));
     }
     if (_selectedFlavor != null) {
-      selections.add(_buildChatBubble('어떤 맛을 원하시나요?', '$_selectedFlavor 을 원하시는군요!'));
+      selections.add(_buildChatBubble('어떤 맛을 원하시나요?', '$_selectedFlavor 을 원하시군요!'));
     }
     if (_selectedBody != null) {
-      selections.add(_buildChatBubble('어떤 바디감을 원하시나요?', '$_selectedBody 바디감을 원하시는군요!'));
+      selections.add(_buildChatBubble('어떤 바디감을 원하시나요?', '$_selectedBody 바디감을 원하시군요!'));
     }
     if (_selectedAroma != null) {
-      selections.add(_buildChatBubble('어떤 향을 원하시나요?', '$_selectedAroma 향을 원하시는군요!'));
+      selections.add(_buildChatBubble('어떤 향을 원하시나요?', '$_selectedAroma 향을 원하시군요!'));
     }
     return selections;
   }
@@ -260,31 +302,37 @@ class _CurationScreenState extends State<CurationScreen> with SingleTickerProvid
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch, // Ensures full width
         children: [
-          Card(
-            color: Colors.grey[200],
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text(
-                question,
-                style: TextStyle(fontSize: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Card(
+              color: Colors.grey[200],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
+                  question,
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ),
-          Card(
-            color: Colors.blue[100],
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text(
-                answer,
-                style: TextStyle(fontSize: 16, color: Colors.blueAccent),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Card(
+              color: Colors.blue[100],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
+                  answer,
+                  style: TextStyle(fontSize: 16, color: Colors.blueAccent),
+                ),
               ),
             ),
           ),

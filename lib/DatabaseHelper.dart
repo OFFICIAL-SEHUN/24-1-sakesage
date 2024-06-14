@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:mysql1/mysql1.dart';
 
 class DatabaseHelper {
@@ -24,6 +26,7 @@ class DatabaseHelper {
   }
 
   Future<List<Map<String, dynamic>>> getData() async {
+    await connect(); // 데이터베이스 연결 확인
     final conn = _connection;
     if (conn == null) {
       throw Exception('Database not connected');
@@ -54,10 +57,10 @@ class DatabaseHelper {
     for (var row in results) {
       String storeName = row[0].toString();
       String address = row[1].toString();
-      String phone = row[2]?.toString() ?? 'N/A';  // phone이 null일 수 있으므로 기본값 설정
-      String businessHours = row[3]?.toString() ?? 'N/A';  // business_hours가 null일 수 있으므로 기본값 설정
+      String phone = row[2]?.toString() ?? 'N/A';
+      String businessHours = row[3]?.toString() ?? 'N/A';
 
-      print('Fetched store: $storeName, address: $address, phone: $phone, business hours: $businessHours'); // 디버깅 출력
+      print('Fetched store: $storeName, address: $address, phone: $phone, business hours: $businessHours');
       storeLocations.add({
         'store_name': storeName,
         'address': address,
@@ -73,7 +76,7 @@ class DatabaseHelper {
     if (conn == null) {
       throw Exception('Database not connected');
     }
-    var query = 'SELECT no, title, price, taste, image_url, site_name, name FROM sake_info WHERE site_name LIKE ?';
+    var query = 'SELECT no, title, price, taste, image_url, site_name FROM sake_info WHERE site_name LIKE ?';
     var results = await conn.query(query, ['%$storeName%']);
     List<Map<String, dynamic>> products = [];
     for (var row in results) {
@@ -84,34 +87,55 @@ class DatabaseHelper {
         'taste': row[3],
         'image_url': row[4],
         'site_name': row[5],
-        'name': row[6],
       });
     }
-    print('Products: $products'); // 디버깅 출력
+    print('Products: $products');
     return products;
   }
 
-  Future<List<Map<String, dynamic>>> getReviews(String title) async {
+  Future<Map<String, dynamic>?> getReview(String title) async {
     final conn = _connection;
     if (conn == null) {
       throw Exception('Database not connected');
     }
-    var query = 'SELECT sake_title, review, date, writer, score FROM sake_review WHERE sake_title = ?';
-    print('Querying reviews for title: $title'); // 디버깅 출력
+    var query = '''
+    SELECT 
+        sake_info.title COLLATE utf8mb4_unicode_ci AS title, 
+        sake_info.image_url, 
+        sake_review.imgur_url,
+        sake_review.explanation
+    FROM 
+        sake_info
+    JOIN 
+        sake_review 
+    ON 
+        sake_info.title COLLATE utf8mb4_unicode_ci = sake_review.sake_title COLLATE utf8mb4_unicode_ci
+    WHERE
+        sake_info.title COLLATE utf8mb4_unicode_ci = ?
+        AND sake_review.imgur_url IS NOT NULL 
+        AND sake_review.imgur_url != ''
+    LIMIT 1;
+  ''';
+    print('Querying review for title: $title');
     var results = await conn.query(query, [title]);
-    List<Map<String, dynamic>> reviews = [];
-    for (var row in results) {
-      reviews.add({
-        'sake_title': row[0],
-        'review': row[1],
-        'date': row[2],
-        'writer': row[3],
-        'score': row[4],
-      });
+
+    if (results.isEmpty) {
+      return null;  // 결과가 없으면 null 반환
     }
-    print('Reviews: $reviews'); // 디버깅 출력
-    return reviews;
+
+    var row = results.first;
+    Map<String, dynamic> review = {
+      'sake_title': row[0],
+      'image_url': row[1],
+      'imgur_url': row[2] != null ? row[2] as String : null,
+      'explanation': row[3],
+    };
+
+    print('Review: $review');
+    return review;
   }
+
+
 
   Future<List<Map<String, dynamic>>> searchData(String query) async {
     final conn = _connection;

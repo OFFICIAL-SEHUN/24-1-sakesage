@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sakesage/DatabaseHelper.dart';
-import 'package:sakesage/home/ProductDetail.dart'; // 수정된 부분: ProductDetail.dart 파일을 import
+import 'package:sakesage/home/ProductDetail.dart';
 
 class DeliveryScreen extends StatefulWidget {
   @override
@@ -11,7 +11,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   final DatabaseHelper db = DatabaseHelper();
   List<Map<String, dynamic>> data = [];
   bool isLoading = true;
-  String _selectedSort = 'Price';
 
   @override
   void initState() {
@@ -20,57 +19,40 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   }
 
   void fetchData() async {
-    List<Map<String, dynamic>> fetchedData = await db.getData();
-    setState(() {
-      data = fetchedData;
-      isLoading = false;
-    });
-    sortData();
-  }
-
-  void sortData() {
-    setState(() {
-      if (_selectedSort == 'Price') {
-        data.sort((a, b) => double.parse(a['price']).compareTo(double.parse(b['price'])));
-      } else if (_selectedSort == 'Name') {
-        data.sort((a, b) => a['title'].compareTo(b['title']));
-      }
-    });
+    try {
+      List<Map<String, dynamic>> fetchedData = await db.getData();
+      setState(() {
+        data = fetchedData;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching data: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Get the screen size
+    var screenSize = MediaQuery.of(context).size;
+
+    // Determine the cross axis count based on the screen width
+    int crossAxisCount = screenSize.width < 600 ? 2 : 4;
+
     return Scaffold(
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(1.0),
+            padding: const EdgeInsets.all(8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '   모든 사케 리스트',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                DropdownButton<String>(
-                  value: _selectedSort,
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedSort = newValue;
-                        sortData();
-                      });
-                    }
-                  },
-                  items: <String>['Price', 'Name']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
                 ),
               ],
             ),
@@ -80,7 +62,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
               padding: const EdgeInsets.all(8.0),
               child: GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+                  crossAxisCount: crossAxisCount, // 수정된 부분: crossAxisCount 동적으로 설정
                   childAspectRatio: 2 / 3,
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 8.0,
@@ -105,7 +87,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            height: 150.0,
+                            height: 200,
                             width: double.infinity,
                             child: data[index]['image_url'] != null
                                 ? ClipRRect(

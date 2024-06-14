@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:sakesage/home/Curation.dart';
-import 'package:sakesage/home/DeliveryScreen.dart';
+import 'package:sakesage/DatabaseHelper.dart';
 import 'package:sakesage/home/GoogleMap.dart';
 import 'package:sakesage/home/widgets/home_widget.dart';
-import 'package:sakesage/DatabaseHelper.dart'; // DatabaseHelper 추가
-import 'package:sakesage/home/ProductDetail.dart'; // ProductDetail 추가
+import 'package:sakesage/home/ProductDetail.dart';
+import 'package:sakesage/home/DeliveryScreen.dart';
+import 'package:sakesage/home/Curation.dart'; // CurationScreen import 추가
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
-  final DatabaseHelper db = DatabaseHelper(); // DatabaseHelper 인스턴스 생성
+  final DatabaseHelper db = DatabaseHelper();
 
   @override
   void initState() {
@@ -82,6 +82,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void navigateToPage(int index) {
+    setState(() {
+      _menuIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: _isSearching
             ? [_buildSearchResults(), Container(), Container(), Container()]
             : [
-          HomeWidget(),
+          HomeWidget(navigateToPage: navigateToPage),
           GoogleMapScreen(),
           DeliveryScreen(),
           CurationScreen(),
@@ -141,12 +147,12 @@ class _HomeScreenState extends State<HomeScreen> {
             label: "픽업하기",
           ),
           NavigationDestination(
-            icon: Icon(Icons.directions_bike_outlined),
+            icon: Icon(Icons.delivery_dining_outlined),
             label: "배달받기",
           ),
           NavigationDestination(
-            icon: Icon(Icons.account_box),
-            label: "사케 큐레이션",
+            icon: Icon(Icons.corporate_fare),
+            label: "큐레이션",
           ),
         ],
       ),
