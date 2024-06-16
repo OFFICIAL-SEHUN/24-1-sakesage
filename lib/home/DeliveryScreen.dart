@@ -127,7 +127,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 4.0),
-                                Text('${data[index]['price']}'),
+                                Text('¥${data[index]['price']}'),
                                 Text('${data[index]['site_name']}'),
                               ],
                             ),

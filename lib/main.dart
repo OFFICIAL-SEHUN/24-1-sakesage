@@ -6,6 +6,10 @@ import 'package:sakesage/home/home_screen.dart';
 import 'package:sakesage/login/login_screen.dart';
 import 'package:sakesage/login/sign_up_screen.dart';
 import 'package:sakesage/DatabaseHelper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sakesage/login/auth_service.dart';
+import 'home/Cart.dart';
+import 'home/ProductDetail.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,12 +22,26 @@ void main() async {
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
+  final AuthService _authService = AuthService();
+
   // Define the router
-  final GoRouter _router = GoRouter(
+  late final GoRouter _router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => HomeScreen(),
+        builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
         path: '/products',
@@ -40,14 +58,29 @@ class MyApp extends StatelessWidget {
         builder: (context, state) => DeliveryScreen(),
       ),
       GoRoute(
-        path: '/login',
-        builder: (context, state) => LoginScreen(),
+        path: '/cart',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return CartScreen(userEmail: extra['userEmail']);
+        },
       ),
       GoRoute(
-        path: '/signup',
-        builder: (context, state) => SignUpScreen(),
+        path: '/product_detail',
+        builder: (context, state) {
+          final product = state.extra as Map<String, dynamic>;
+          return ProductDetail(product);
+        },
       ),
     ],
+    redirect: (context, state) async {
+      final loggedIn = await _authService.isLoggedIn();
+      final loggingIn = state.uri.toString() == '/login';
+
+      if (!loggedIn && !loggingIn) return '/login';
+      if (loggedIn && loggingIn) return '/home';
+
+      return null;
+    },
   );
 
   @override
@@ -57,13 +90,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
-        textTheme: TextTheme(
+        textTheme: const TextTheme(
           headlineLarge: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold, color: Colors.black),
           titleLarge: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: Colors.black),
           bodyMedium: TextStyle(fontSize: 16.0, color: Colors.black87),
         ),
-        buttonTheme: ButtonThemeData(
-          buttonColor: Colors.blue, // 기본 버튼 색상 설정
+        buttonTheme: const ButtonThemeData(
+          buttonColor: Colors.blue,
           textTheme: ButtonTextTheme.primary,
         ),
       ),

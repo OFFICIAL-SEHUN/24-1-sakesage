@@ -5,6 +5,7 @@ import 'package:sakesage/home/widgets/home_widget.dart';
 import 'package:sakesage/home/ProductDetail.dart';
 import 'package:sakesage/home/DeliveryScreen.dart';
 import 'package:sakesage/home/Curation.dart'; // CurationScreen import 추가
+import 'package:sakesage/home/widgets/MyPageWidget.dart';  // MyPageWidget을 임포트
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -122,12 +123,13 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _menuIndex,
         children: _isSearching
-            ? [_buildSearchResults(), Container(), Container(), Container()]
+            ? [_buildSearchResults(), Container(), Container(), Container(), Container()]
             : [
           HomeWidget(navigateToPage: navigateToPage),
           GoogleMapScreen(),
           DeliveryScreen(),
           CurationScreen(),
+          MyPageWidget(),  // MyPageWidget 추가
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -153,6 +155,10 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(
             icon: Icon(Icons.corporate_fare),
             label: "큐레이션",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_circle_outlined), // 마이페이지 아이콘 추가
+            label: "마이페이지",
           ),
         ],
       ),

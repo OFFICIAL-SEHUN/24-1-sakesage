@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:mysql1/mysql1.dart';
 
 class DatabaseHelper {
@@ -25,8 +24,67 @@ class DatabaseHelper {
     _connection = await MySqlConnection.connect(settings);
   }
 
+  Future<void> addToCart(String user_id, String sake_title, String price, int quantity) async {
+    final conn = _connection;
+    if (conn == null) {
+      throw Exception('Database not connected');
+    }
+    await conn.query(
+      'INSERT INTO user_cart (user_id, sake_title, price, quantity) VALUES (?, ?, ?, ?)',
+      [user_id, sake_title, price, quantity],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> bringFromCart(String user_id) async {
+    final conn = _connection;
+    if (conn == null) {
+      throw Exception('Database not connected');
+    }
+    var results = await conn.query(
+      'SELECT sake_title, price, quantity FROM user_cart WHERE user_id = ?',
+      [user_id],
+    );
+    List<Map<String, dynamic>> cart = [];
+    for (var row in results) {
+      cart.add({
+        'sake_title': row[0],
+        'price': row[1],
+        'quantity': row[2],
+      });
+    }
+    return cart;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchOrderHistory(String email) async {
+    final conn = _connection;
+    if (conn == null) {
+      throw Exception('Database not connected');
+    }
+    var results = await conn.query(
+      '''
+      SELECT oh.no, oh.sake_title, oh.price, oh.quantity, oh.date, si.image_url 
+      FROM order_history oh 
+      JOIN sake_info si ON oh.sake_title = si.title COLLATE utf8mb4_unicode_ci
+      WHERE oh.user_id = ?
+      ''',
+      [email],
+    );
+    List<Map<String, dynamic>> orderHistory = [];
+    for (var row in results) {
+      orderHistory.add({
+        'order_id': row['no'],
+        'sake_title': row['sake_title'],
+        'price': row['price'],
+        'quantity': row['quantity'],
+        'order_date': row['date'],
+        'image_url': row['image_url'],
+      });
+    }
+    return orderHistory;
+  }
+
   Future<List<Map<String, dynamic>>> getData() async {
-    await connect(); // 데이터베이스 연결 확인
+    await connect();
     final conn = _connection;
     if (conn == null) {
       throw Exception('Database not connected');
@@ -45,6 +103,31 @@ class DatabaseHelper {
       });
     }
     return data;
+  }
+
+  Future<List<Map<String, dynamic>>> getCartItems(String email) async {
+    final conn = _connection;
+    if (conn == null) {
+      throw Exception('Database not connected');
+    }
+    var results = await conn.query('''
+      SELECT si.no, si.title, si.price, si.taste, si.image_url, si.site_name 
+      FROM user_cart uc 
+      JOIN sake_info si ON uc.product_id = si.no 
+      WHERE uc.email = ?
+    ''', [email]);
+    List<Map<String, dynamic>> cartItems = [];
+    for (var row in results) {
+      cartItems.add({
+        'no': row[0],
+        'title': row[1],
+        'price': row[2],
+        'taste': row[3],
+        'image_url': row[4],
+        'site_name': row[5],
+      });
+    }
+    return cartItems;
   }
 
   Future<List<Map<String, dynamic>>> getStoreLocations() async {
@@ -120,7 +203,7 @@ class DatabaseHelper {
     var results = await conn.query(query, [title]);
 
     if (results.isEmpty) {
-      return null;  // 결과가 없으면 null 반환
+      return null;
     }
 
     var row = results.first;
@@ -134,8 +217,6 @@ class DatabaseHelper {
     print('Review: $review');
     return review;
   }
-
-
 
   Future<List<Map<String, dynamic>>> searchData(String query) async {
     final conn = _connection;
@@ -152,6 +233,39 @@ class DatabaseHelper {
       });
     }
     return searchResults;
+  }
+
+  Future<void> moveCartToOrderHistory(String user_id) async {
+    final conn = _connection;
+    if (conn == null) {
+      throw Exception('Database not connected');
+    }
+    try {
+      var cartItems = await bringFromCart(user_id);
+
+      for (var item in cartItems) {
+        await conn.query(
+          'INSERT INTO order_history (user_id, sake_title, price, quantity, date) VALUES (?, ?, ?, ?, NOW())',
+          [user_id, item['sake_title'], item['price'], item['quantity']],
+        );
+      }
+
+      await conn.query('DELETE FROM user_cart WHERE user_id = ?', [user_id]);
+    } catch (e) {
+      print('Error moving cart items to order history: $e');
+    }
+  }
+
+
+  Future<void> deleteCartItem(String userEmail, String sakeTitle) async {
+    final conn = _connection;
+    if (conn == null) {
+      throw Exception('Database not connected');
+    }
+    await conn.query(
+      'DELETE FROM user_cart WHERE user_id = ? AND sake_title = ? LIMIT 1',
+      [userEmail, sakeTitle],
+    );
   }
 
   Future<List<Map<String, dynamic>>> getCuratedSake(String recipient, String flavor, String body, String aroma) async {
@@ -178,4 +292,5 @@ class DatabaseHelper {
     }
     return curatedSake;
   }
+
 }

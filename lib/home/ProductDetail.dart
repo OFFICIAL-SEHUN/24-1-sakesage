@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sakesage/DatabaseHelper.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'Cart.dart';
+import 'package:sakesage/login/auth_service.dart'; // AuthService import
 
 class ProductDetail extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -14,6 +15,7 @@ class ProductDetail extends StatefulWidget {
 
 class _ProductDetailState extends State<ProductDetail> {
   final DatabaseHelper db = DatabaseHelper();
+  final AuthService _authService = AuthService(); // AuthService instance
   Map<String, dynamic>? review;
   List<Map<String, dynamic>> cartItems = [];
   bool isLoading = true;
@@ -34,15 +36,36 @@ class _ProductDetailState extends State<ProductDetail> {
     });
   }
 
-  void addToCart() {
+  Future<void> addToCart() async {
+    String? userEmail = await _authService.getUserEmail(); // 사용자 이메일 가져오기
+    if (userEmail == null) return;
+
+    await db.addToCart(
+      userEmail,
+      widget.product['title'],
+      widget.product['price'].toString(),
+      1, // 수량을 1로 설정 (필요에 따라 변경 가능)
+    );
     setState(() {
       cartItems.add(widget.product);
     });
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CartScreen(cartItems: cartItems),
-      ),
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('알림'),
+          content: Text('장바구니에 상품이 담겼습니다'),
+          actions: [
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -133,7 +156,7 @@ class _ProductDetailState extends State<ProductDetail> {
   }
 
   Widget buildReview(Map<String, dynamic> review, double width, double height) {
-    final imgurHeight = height * 1;
+    final imgurHeight = height;
     final imgurWidth = width * 0.7; // imgur 이미지 너비를 중앙으로 설정
     return Center(
       child: review['imgur_url'] != null && review['imgur_url'].isNotEmpty
@@ -177,6 +200,23 @@ class _ProductDetailState extends State<ProductDetail> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.product['title']),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart),
+            iconSize: 36.0, // 아이콘 크기 설정
+            onPressed: () async {
+              String? userEmail = await _authService.getUserEmail(); // 사용자 이메일 가져오기
+              if (userEmail != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CartScreen(userEmail: userEmail), // 사용자 이메일 전달
+                  ),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -193,7 +233,7 @@ class _ProductDetailState extends State<ProductDetail> {
             SizedBox(height: 16.0),
             buildProductTaste(fontSizeTaste),
             SizedBox(height: 16.0),
-            buildAddToCartButton(fontSizeTaste),
+            buildAddToCartButton(fontSizeTaste), // '장바구니에 담기' 버튼 추가
             SizedBox(height: 16.0),
             Text(
               '한눈에 보이는 리뷰',

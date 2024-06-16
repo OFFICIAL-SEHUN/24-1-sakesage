@@ -2,6 +2,9 @@ import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:sakesage/DatabaseHelper.dart';
+import 'package:sakesage/login/auth_service.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sakesage/home/Cart.dart'; // CartScreen import
 
 class HomeWidget extends StatefulWidget {
   final Function(int) navigateToPage;
@@ -31,6 +34,7 @@ class _HomeWidgetState extends State<HomeWidget> {
   bool isLoading = true;
 
   final DatabaseHelper db = DatabaseHelper();
+  final AuthService _authService = AuthService();
 
   final List<String> youtubeVideoIds = [
     'oboGO0705CM',
@@ -58,13 +62,16 @@ class _HomeWidgetState extends State<HomeWidget> {
     });
   }
 
-  void navigateToPage(BuildContext context, String text) {
+  void navigateToPage(BuildContext context, String text) async {
+    String? userEmail = await _authService.getUserEmail();
     if (text == "픽업하기") {
       widget.navigateToPage(1);
     } else if (text == "배달받기") {
       widget.navigateToPage(2);
     } else if (text == "사케 큐레이션") {
       widget.navigateToPage(3);
+    } else if (text == "장바구니") {
+      context.go('/cart', extra: {'userEmail': userEmail});
     }
   }
 
@@ -127,211 +134,222 @@ class _HomeWidgetState extends State<HomeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenWidth = constraints.maxWidth;
-        final screenHeight = constraints.maxHeight;
-        final bannerHeight = screenHeight * 0.14;
-        final iconSize = screenWidth * 0.1;
-        final fontSize = screenWidth * 0.03;
-        final gridItemHeight = screenHeight * 0.25;
-        final gridItemWidth = screenWidth * 0.9;
-        final youtubePlayerWidth = screenWidth * 0.7;
-        final youtubePlayerHeight = screenHeight * 0.3;
+    final size = MediaQuery.of(context).size;
+    final double bannerHeight = size.height * 0.14;
+    final double iconSize = size.width * 0.07;
+    final double fontSize = size.width * 0.03;
+    final double gridItemHeight = size.height * 0.25;
+    final double gridItemWidth = size.width * 0.9;
+    final double youtubePlayerWidth = size.width * 0.7;
+    final double youtubePlayerHeight = size.height * 0.3;
 
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                height: bannerHeight,
-                color: Colors.white,
-                margin: const EdgeInsets.only(bottom: 8),
-                child: PageView(
-                  controller: pageController,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      child: Image.asset("assets/sakesage.png"),
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      child: Image.asset("assets/banner_sake1.png"),
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      child: Image.asset("assets/banner_sake2.png"),
-                    ),
-                  ],
-                  onPageChanged: (idx) {
-                    setState(() {
-                      bannerIndex = idx;
-                    });
-                  },
-                ),
-              ),
-              DotsIndicator(
-                dotsCount: 3,
-                position: bannerIndex,
-              ),
-              Container(
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                margin: EdgeInsets.symmetric(vertical: 10),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "어떤 것을 찾으시나요?",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: fontSize * 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 14),
-                    Container(
-                      height: gridItemHeight * 0.6,
-                      width: gridItemWidth,
-                      child: GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 150,
-                          mainAxisSpacing: 10,
-                        ),
-                        itemCount: cardTexts.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return buildCard(cardTexts[index], cardIcons[index], iconSize, fontSize);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "오늘의 특가",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: fontSize * 1,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Container(
-                      height: screenHeight * 0.12,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: discountImages.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            width: screenWidth * 0.23,
-                            margin: EdgeInsets.symmetric(horizontal: 5),
-                            color: Colors.white,
-                            child: Center(
-                              child: Image.asset(
-                                discountImages[index],
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "사케에 대해서!",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: fontSize * 1,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          height: youtubePlayerHeight * 1.34,
-                          child: PageView.builder(
-                            controller: youtubePageController,
-                            itemCount: youtubeVideoIds.length,
-                            itemBuilder: (context, index) {
-                              return buildYoutubePlayer(youtubeVideoIds[index], youtubePlayerWidth, youtubePlayerHeight);
-                            },
-                            onPageChanged: (idx) {
-                              setState(() {
-                                youtubeIndex = idx;
-                              });
-                            },
-                          ),
-                        ),
-                        Positioned(
-                          left: 16,
-                          child: IconButton(
-                            icon: Icon(Icons.arrow_back_ios),
-                            onPressed: () {
-                              if (youtubeIndex > 0) {
-                                youtubePageController.previousPage(
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              }
-                            },
-                          ),
-                        ),
-                        Positioned(
-                          right: 16,
-                          child: IconButton(
-                            icon: Icon(Icons.arrow_forward_ios),
-                            onPressed: () {
-                              if (youtubeIndex < youtubeVideoIds.length - 1) {
-                                youtubePageController.nextPage(
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              }
-                            },
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          child: DotsIndicator(
-                            dotsCount: youtubeVideoIds.length,
-                            position: youtubeIndex,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // 추가된 이미지 컨테이너
-              Container(
-                margin: EdgeInsets.only(top: 10),
-                color: Colors.white,
-                child: Image.asset(
-                  "assets/caution.gif", // 여기에 원하는 이미지 경로를 설정하세요
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home', style: TextStyle(fontSize: fontSize)),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await _authService.logout();
+              if (mounted) {
+                context.go('/login');
+              }
+            },
           ),
-        );
-      },
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: bannerHeight,
+              color: Colors.white,
+              margin: const EdgeInsets.only(bottom: 8),
+              child: PageView(
+                controller: pageController,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    child: Image.asset("assets/sakesage.png"),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    child: Image.asset("assets/banner_sake1.png"),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    child: Image.asset("assets/banner_sake2.png"),
+                  ),
+                ],
+                onPageChanged: (idx) {
+                  setState(() {
+                    bannerIndex = idx;
+                  });
+                },
+              ),
+            ),
+            DotsIndicator(
+              dotsCount: 3,
+              position: bannerIndex,
+            ),
+            Container(
+              color: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              margin: EdgeInsets.symmetric(vertical: 10),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "어떤 것을 찾으시나요?",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: fontSize,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 14),
+                  Container(
+                    height: gridItemHeight * 0.6,
+                    width: gridItemWidth,
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 150,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: cardTexts.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return buildCard(cardTexts[index], cardIcons[index], iconSize, fontSize);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              color: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "오늘의 특가",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: fontSize,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    height: size.height * 0.12,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: discountImages.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: size.width * 0.23,
+                          margin: EdgeInsets.symmetric(horizontal: 5),
+                          color: Colors.white,
+                          child: Center(
+                            child: Image.asset(
+                              discountImages[index],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              color: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "사케에 대해서!",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: fontSize,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        height: youtubePlayerHeight * 1.34,
+                        child: PageView.builder(
+                          controller: youtubePageController,
+                          itemCount: youtubeVideoIds.length,
+                          itemBuilder: (context, index) {
+                            return buildYoutubePlayer(youtubeVideoIds[index], youtubePlayerWidth, youtubePlayerHeight);
+                          },
+                          onPageChanged: (idx) {
+                            setState(() {
+                              youtubeIndex = idx;
+                            });
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        left: 16,
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back_ios),
+                          onPressed: () {
+                            if (youtubeIndex > 0) {
+                              youtubePageController.previousPage(
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        right: 16,
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_forward_ios),
+                          onPressed: () {
+                            if (youtubeIndex < youtubeVideoIds.length - 1) {
+                              youtubePageController.nextPage(
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        child: DotsIndicator(
+                          dotsCount: youtubeVideoIds.length,
+                          position: youtubeIndex,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // 추가된 이미지 컨테이너
+            Container(
+              margin: EdgeInsets.only(top: 10),
+              color: Colors.white,
+              child: Image.asset(
+                "assets/caution.gif", // 여기에 원하는 이미지 경로를 설정하세요
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
