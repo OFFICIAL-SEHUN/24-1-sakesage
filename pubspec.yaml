@@ -36,12 +36,12 @@ dependencies:
   http: ^1.2.1
   shared_preferences: ^2.2.3
   provider: ^6.1.2
-  flutter_webview_plugin: ^0.4.0
+  webview_flutter: ^4.8.0
   google_sign_in: ^6.2.1
   youtube_player_flutter: ^9.0.1
   geocoding: ^3.0.0
+  bootpay: ^4.9.91
   auto_size_text: ^3.0.0
-
   image_picker: ^1.0.7
   intl: ^0.19.0
   dots_indicator: ^3.0.0
@@ -57,6 +57,9 @@ dependencies:
   google_maps_flutter: ^2.6.0
   location: ^6.0.1
   firebase_storage: ^11.7.0
+
+dependency_overrides:
+  js: 0.6.4
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,7 @@ import 'package:location/location.dart' as loc;
 import 'package:geocoding/geocoding.dart';
 import 'package:sakesage/DatabaseHelper.dart';
 import 'Product_list.dart';  // Product_list.dart 파일 임포트
+import 'Product_list_EVERY.dart';  // Product_list_EVERY.dart 파일 임포트
 
 class GoogleMapScreen extends StatefulWidget {
   const GoogleMapScreen({Key? key}) : super(key: key);
@@ -187,15 +188,27 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
   void _navigateToProductList() {
     if (_selectedStoreName != null && _selectedStoreAddress != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProductListScreen(
-            storeName: _selectedStoreName!,
-            storeAddress: _selectedStoreAddress!,
+      if (_selectedStoreName == '에브리사케') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductListEveryScreen(
+              storeName: _selectedStoreName!,
+              storeAddress: _selectedStoreAddress!,
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductListScreen(
+              storeName: _selectedStoreName!,
+              storeAddress: _selectedStoreAddress!,
+            ),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('가게를 선택해 주세요.')),

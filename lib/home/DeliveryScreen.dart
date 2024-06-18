@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sakesage/DatabaseHelper.dart';
 import 'package:sakesage/home/ProductDetail.dart';
+import 'package:intl/intl.dart';  // intl 패키지 임포트
 
 class DeliveryScreen extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   final DatabaseHelper db = DatabaseHelper();
   List<Map<String, dynamic>> data = [];
   bool isLoading = true;
+  final NumberFormat currencyFormat = NumberFormat('#,##0', 'en_US');  // NumberFormat 인스턴스 생성
 
   @override
   void initState() {
@@ -62,19 +64,20 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
               padding: const EdgeInsets.all(8.0),
               child: GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount, // 수정된 부분: crossAxisCount 동적으로 설정
+                  crossAxisCount: crossAxisCount, // crossAxisCount 동적으로 설정
                   childAspectRatio: 2 / 3,
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 8.0,
                 ),
                 itemCount: data.length,
                 itemBuilder: (context, index) {
-                  return GestureDetector( // 수정된 부분: GestureDetector로 감싸기
+                  final formattedPrice = currencyFormat.format(data[index]['price']); // 금액 포맷팅
+                  return GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProductDetail(data[index]), // 수정된 부분: ProductDetail 화면으로 이동
+                          builder: (context) => ProductDetail(data[index]), // ProductDetail 화면으로 이동
                         ),
                       );
                     },
@@ -127,7 +130,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 4.0),
-                                Text('¥${data[index]['price']}'),
+                                Text('¥$formattedPrice'),
                                 Text('${data[index]['site_name']}'),
                               ],
                             ),

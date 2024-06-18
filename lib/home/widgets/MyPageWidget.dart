@@ -83,7 +83,8 @@ class MyPageWidget extends StatelessWidget {
                 // 리뷰 및 평점 페이지로 이동하는 코드 작성
               },
             ),
-            _buildEmptyTile(tileHeight), // 빈 타일 추가
+            Spacer(), // 추가: 빈 공간을 차지하도록 함
+            _buildEmptyTile(tileHeight), // 빈 타일을 맨 밑으로 이동
           ],
         ),
       ),
@@ -119,10 +120,17 @@ class MyPageWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Container(
-        height: tileHeight*5,
+        height: tileHeight * 4,
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10.0),
+          child: Image.asset(
+            'assets/sakesage.png', // 로컬 이미지 경로
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );

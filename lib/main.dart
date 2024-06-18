@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sakesage/home/DeliveryScreen.dart';
-import 'package:sakesage/home/Product_list.dart';
-import 'package:sakesage/home/home_screen.dart';
-import 'package:sakesage/login/login_screen.dart';
-import 'package:sakesage/login/sign_up_screen.dart';
-import 'package:sakesage/DatabaseHelper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sakesage/login/auth_service.dart';
+import 'home/DeliveryScreen.dart';
+import 'home/Product_list.dart';
+import 'home/home_screen.dart';
+import 'login/login_screen.dart';
+import 'login/sign_up_screen.dart';
+import 'DatabaseHelper.dart';
+import 'login/auth_service.dart';
 import 'home/Cart.dart';
 import 'home/ProductDetail.dart';
+import 'package:sakesage/payment/paymentpage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,6 +70,10 @@ class MyApp extends StatelessWidget {
           final product = state.extra as Map<String, dynamic>;
           return ProductDetail(product);
         },
+      ),
+      GoRoute(
+        path: '/payment',
+        builder: (context, state) => PaymentPage(),
       ),
     ],
     redirect: (context, state) async {

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:sakesage/DatabaseHelper.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'ProductDetail.dart';  // ProductDetail 파일을 임포트
+import 'ProductDetailEVERY.dart';  // ProductDetailEvery 파일을 임포트
 import 'package:intl/intl.dart';  // intl 패키지 임포트
 
-class ProductListScreen extends StatefulWidget {
+class ProductListEveryScreen extends StatefulWidget {
   final String storeName;
   final String storeAddress;
 
-  ProductListScreen({required this.storeName, required this.storeAddress});
+  ProductListEveryScreen({required this.storeName, required this.storeAddress});
 
   @override
-  _ProductListScreenState createState() => _ProductListScreenState();
+  _ProductListEveryScreenState createState() => _ProductListEveryScreenState();
 }
 
-class _ProductListScreenState extends State<ProductListScreen> {
+class _ProductListEveryScreenState extends State<ProductListEveryScreen> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<Map<String, dynamic>> _products = [];
   bool _isLoading = true;
@@ -28,7 +28,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Future<void> _loadProducts() async {
     await _dbHelper.connect();
-    List<Map<String, dynamic>> products = await _dbHelper.getStoreProducts(widget.storeName);
+    List<Map<String, dynamic>> products = await _dbHelper.getEverySakeStoreAndMenu();
     setState(() {
       _products = products;
       _isLoading = false;
@@ -70,23 +70,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 itemCount: _products.length,
                 itemBuilder: (context, index) {
                   final product = _products[index];
-                  final formattedPrice = currencyFormat.format(product['price']); // 금액 포맷팅
+                  final formattedPrice = currencyFormat.format(product['amount']); // 금액 포맷팅
                   return Card(
                     margin: EdgeInsets.symmetric(vertical: 8.0),
                     child: ListTile(
                       leading: Image.network(
-                        product['image_url'],
+                        product['thumbnail'],
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
                       ),
-                      title: Text(product['title']),
-                      subtitle: Text('가격:  ¥$formattedPrice\n${product['taste']}'),
+                      title: Text(product['name']),
+                      subtitle: Text('가격:  ¥$formattedPrice'),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProductDetail(product),
+                            builder: (context) => ProductDetailEveryScreen(product: product),
                           ),
                         );
                       },

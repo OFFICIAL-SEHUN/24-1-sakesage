@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sakesage/DatabaseHelper.dart';
 import 'package:sakesage/payment/paymentpage.dart'; // PaymentPage를 임포트합니다.
+import 'package:intl/intl.dart'; // intl 패키지 임포트
 
 class CartScreen extends StatefulWidget {
   final String userEmail; // 사용자 이메일을 받는 매개변수 추가
@@ -15,6 +16,7 @@ class _CartScreenState extends State<CartScreen> {
   final DatabaseHelper db = DatabaseHelper();
   List<Map<String, dynamic>> cartItem = [];
   bool isLoading = true;
+  final NumberFormat currencyFormat = NumberFormat('#,##0', 'en_US'); // NumberFormat 인스턴스 생성
 
   @override
   void initState() {
@@ -91,7 +93,7 @@ class _CartScreenState extends State<CartScreen> {
                 Row(
                   children: [
                     Text(
-                      '총 가격: ¥${calculateTotalPrice().toStringAsFixed(0)}',
+                      '총 가격: ¥${currencyFormat.format(calculateTotalPrice())}', // 금액 포맷팅
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(width: 16),
@@ -116,6 +118,7 @@ class _CartScreenState extends State<CartScreen> {
               child: ListView.builder(
                 itemCount: cartItem.length,
                 itemBuilder: (context, index) {
+                  final formattedPrice = currencyFormat.format(cartItem[index]['price']); // 금액 포맷팅
                   return Card(
                     elevation: 4.0,
                     shape: RoundedRectangleBorder(
@@ -137,7 +140,7 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                               ),
                               SizedBox(height: 4.0),
-                              Text('¥${cartItem[index]['price']}'),
+                              Text('¥$formattedPrice'),
                               Text('수량 ${cartItem[index]['quantity']}'),
                             ],
                           ),

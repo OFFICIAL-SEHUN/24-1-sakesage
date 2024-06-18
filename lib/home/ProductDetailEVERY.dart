@@ -3,24 +3,24 @@ import 'package:sakesage/DatabaseHelper.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'Cart.dart';
 import 'package:sakesage/login/auth_service.dart'; // AuthService import
-import 'package:intl/intl.dart';  // intl 패키지 임포트
+import 'package:intl/intl.dart'; // intl 패키지 임포트
 
-class ProductDetail extends StatefulWidget {
+class ProductDetailEveryScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
-  const ProductDetail(this.product, {Key? key}) : super(key: key);
+  const ProductDetailEveryScreen({required this.product, Key? key}) : super(key: key);
 
   @override
-  _ProductDetailState createState() => _ProductDetailState();
+  _ProductDetailEveryScreenState createState() => _ProductDetailEveryScreenState();
 }
 
-class _ProductDetailState extends State<ProductDetail> {
+class _ProductDetailEveryScreenState extends State<ProductDetailEveryScreen> {
   final DatabaseHelper db = DatabaseHelper();
   final AuthService _authService = AuthService(); // AuthService instance
   Map<String, dynamic>? review;
   List<Map<String, dynamic>> cartItems = [];
   bool isLoading = true;
-  final NumberFormat currencyFormat = NumberFormat('#,##0', 'en_US');  // NumberFormat 인스턴스 생성
+  final NumberFormat currencyFormat = NumberFormat('#,##0', 'en_US'); // NumberFormat 인스턴스 생성
 
   @override
   void initState() {
@@ -30,7 +30,7 @@ class _ProductDetailState extends State<ProductDetail> {
 
   Future<void> fetchReview() async {
     await db.connect();
-    Map<String, dynamic>? fetchedReview = await db.getReview(widget.product['title']);
+    Map<String, dynamic>? fetchedReview = await db.getReview(widget.product['name']);
     print('Fetched review: $fetchedReview'); // 디버깅 출력
     setState(() {
       review = fetchedReview;
@@ -44,8 +44,8 @@ class _ProductDetailState extends State<ProductDetail> {
 
     await db.addToCart(
       userEmail,
-      widget.product['title'],
-      widget.product['price'].toString(),
+      widget.product['name'],
+      widget.product['amount'].toString(),
       1, // 수량을 1로 설정 (필요에 따라 변경 가능)
     );
     setState(() {
@@ -73,11 +73,11 @@ class _ProductDetailState extends State<ProductDetail> {
 
   Widget buildProductImage(double width, double height) {
     return Center(
-      child: widget.product['image_url'] != null && widget.product['image_url'].isNotEmpty
+      child: widget.product['thumbnail'] != null && widget.product['thumbnail'].isNotEmpty
           ? ClipRRect(
         borderRadius: BorderRadius.circular(10.0),
         child: Image.network(
-          widget.product['image_url'],
+          widget.product['thumbnail'],
           width: width / 2,
           height: height,
           fit: BoxFit.cover,
@@ -103,7 +103,7 @@ class _ProductDetailState extends State<ProductDetail> {
 
   Widget buildProductTitle(double fontSize) {
     return AutoSizeText(
-      widget.product['title'],
+      widget.product['name'],
       style: TextStyle(
         fontSize: fontSize,
         fontWeight: FontWeight.bold,
@@ -116,33 +116,13 @@ class _ProductDetailState extends State<ProductDetail> {
   }
 
   Widget buildProductPrice(double fontSize) {
-    final formattedPrice = currencyFormat.format(widget.product['price']); // 금액 포맷팅
+    final formattedPrice = currencyFormat.format(widget.product['amount']); // 금액 포맷팅
     return Text(
       ' ¥$formattedPrice',
       style: TextStyle(
         fontSize: fontSize,
         color: Colors.green,
         fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-
-  Widget buildProductSiteName(double fontSize) {
-    return Text(
-      '${widget.product['site_name']}',
-      style: TextStyle(
-        fontSize: fontSize,
-        color: Colors.grey[600],
-      ),
-    );
-  }
-
-  Widget buildProductTaste(double fontSize) {
-    return Text(
-      '${widget.product['taste'] ?? ''}',
-      style: TextStyle(
-        fontSize: fontSize,
-        color: Colors.black87,
       ),
     );
   }
@@ -197,12 +177,10 @@ class _ProductDetailState extends State<ProductDetail> {
     final imageHeight = screenHeight * 0.4; // Product image height remains the same
     final fontSizeTitle = screenHeight * 0.02; // Reduced font size
     final fontSizePrice = screenHeight * 0.015; // Reduced font size
-    final fontSizeSiteName = screenHeight * 0.01; // Reduced font size
-    final fontSizeTaste = screenHeight * 0.01; // Reduced font size
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.product['title']),
+        title: Text(widget.product['name']),
         actions: [
           IconButton(
             icon: Icon(Icons.shopping_cart),
@@ -231,12 +209,8 @@ class _ProductDetailState extends State<ProductDetail> {
             buildProductTitle(fontSizeTitle),
             SizedBox(height: 8.0),
             buildProductPrice(fontSizePrice),
-            SizedBox(height: 8.0),
-            buildProductSiteName(fontSizeSiteName),
             SizedBox(height: 16.0),
-            buildProductTaste(fontSizeTaste),
-            SizedBox(height: 16.0),
-            buildAddToCartButton(fontSizeTaste), // '장바구니에 담기' 버튼 추가
+            buildAddToCartButton(fontSizePrice), // '장바구니에 담기' 버튼 추가
             SizedBox(height: 16.0),
             Text(
               '한눈에 보이는 리뷰',

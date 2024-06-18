@@ -42,6 +42,19 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     }
   }
 
+  void deleteOrder(int orderId) async {
+    try {
+      await db.deleteOrder(orderId);
+      setState(() {
+        orderHistory.removeWhere((order) => order['order_id'] == orderId);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('주문이 삭제되었습니다.')));
+    } catch (e) {
+      print('Error deleting order: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('주문 삭제에 실패했습니다.')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +77,16 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('주문 ID: ${order['order_id']}', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('주문 ID: ${order['order_id']}', style: TextStyle(fontWeight: FontWeight.bold)),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => deleteOrder(order['order_id']),
+                      ),
+                    ],
+                  ),
                   SizedBox(height: 8.0),
                   if (order['image_url'] != null)
                     Image.network(

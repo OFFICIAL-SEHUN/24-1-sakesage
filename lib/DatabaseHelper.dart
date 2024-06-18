@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:mysql1/mysql1.dart';
 
 class DatabaseHelper {
@@ -54,6 +53,34 @@ class DatabaseHelper {
     }
     return cart;
   }
+
+  Future<List<Map<String, dynamic>>> getEverySakeStoreAndMenu() async {
+    final conn = _connection;
+    if (conn == null) {
+      throw Exception('Database not connected');
+    }
+    var results = await conn.query(
+        '''
+SELECT ssi.store_name, ssi.address, sm.name, sm.amount, sm.thumbnail
+FROM sake_store_info ssi
+JOIN store_menu sm ON ssi.no = sm.store_id
+WHERE ssi.store_name = '에브리사케' AND sm.store_id = 1
+'''
+    );
+    List<Map<String, dynamic>> storesAndMenus = [];
+    for (var row in results) {
+      storesAndMenus.add({
+        'store_name': row[0],
+        'address': row[1],
+        'name': row[2],
+        'amount': row[3],
+        'thumbnail': row[4],
+      });
+    }
+    return storesAndMenus;
+  }
+
+
 
   Future<List<Map<String, dynamic>>> fetchOrderHistory(String email) async {
     final conn = _connection;
@@ -256,7 +283,6 @@ class DatabaseHelper {
     }
   }
 
-
   Future<void> deleteCartItem(String userEmail, String sakeTitle) async {
     final conn = _connection;
     if (conn == null) {
@@ -268,26 +294,33 @@ class DatabaseHelper {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getCuratedSake(String recipient, String flavor, String body, String aroma) async {
+  Future<void> deleteOrder(int orderId) async {
+    final conn = _connection;
+    if (conn == null) {
+      throw Exception('Database not connected');
+    }
+    await conn.query(
+      'DELETE FROM order_history WHERE no = ? LIMIT 1',
+      [orderId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getCuratedSake(String modern, String flavor, String body) async {
     final conn = _connection;
     if (conn == null) {
       throw Exception('Database not connected');
     }
     var results = await conn.query(
-        'SELECT sake_id, name, flavor, aroma, body, recipient_type, occasion '
-            'FROM sake_curation '
-            'WHERE recipient_type = ? AND flavor = ? AND body = ? AND aroma = ?',
-        [recipient, flavor, body, aroma]);
+        'SELECT no, name, modern, flavor, body FROM sake_curation WHERE modern = ? AND flavor = ? AND body = ?',
+        [modern, flavor, body]);
     List<Map<String, dynamic>> curatedSake = [];
     for (var row in results) {
       curatedSake.add({
-        'sake_id': row[0],
+        'no': row[0],
         'name': row[1],
-        'flavor': row[2],
-        'aroma': row[3],
+        'modern': row[2],
+        'flavor': row[3],
         'body': row[4],
-        'recipient_type': row[5],
-        'occasion': row[6],
       });
     }
     return curatedSake;

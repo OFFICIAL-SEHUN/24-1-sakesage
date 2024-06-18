@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentPage extends StatefulWidget {
   @override
@@ -7,45 +9,102 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
-  final FlutterWebviewPlugin _webviewPlugin = FlutterWebviewPlugin();
-  final String userId = 'aaa@gmail.com'; // 실제 사용자 ID로 교체하세요
+  late WebViewController _controller;
+  String paymentUrl = '';
+  String? accessToken;
 
   @override
   void initState() {
     super.initState();
-    _webviewPlugin.onUrlChanged.listen((String url) {
-      if (url.contains('/payments/complete')) {
-        // 결제 완료 처리
-        _handlePaymentComplete();
-      }
+    getAccessToken().then((token) {
+      setState(() {
+        accessToken = token;
+      });
+      initiatePayment();
+    }).catchError((error) {
+      print('Failed to get access token: $error');
     });
   }
 
-  void _handlePaymentComplete() {
-    // 결제 완료 후 처리 로직
-    // 예: 서버에 결제 완료 알림 전송, 결제 결과 확인 등
-    Navigator.pop(context); // 결제 완료 후 이전 화면으로 돌아가기
+  Future<String> getAccessToken() async {
+    final response = await http.post(
+      Uri.parse('https://api.bootpay.co.kr/v2/request/token'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'application_id': '66700a6b9d67b097451b01d4',
+        'private_key': 'd5GW4TKZs1I/lp0BusNxj7V/xa2++oNxjD14mlar8rM=',
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      print('Response data: $jsonResponse');
+      if (jsonResponse['access_token'] != null) {
+        return jsonResponse['access_token'];
+      } else {
+        throw Exception('Failed to obtain access token: Invalid response structure');
+      }
+    } else {
+      throw Exception('Failed to obtain access token: ${response.body}');
+    }
+  }
+
+  Future<void> initiatePayment() async {
+    if (accessToken == null) {
+      print('Access token is not available');
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('https://api.bootpay.co.kr/v2/request/payment'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'price': 1000,
+        'order_id': 'ORDER_ID',
+        'name': 'Test Payment',
+        'pg': 'danal',
+        'method': 'card',
+        'user_info': {
+          'username': 'user',
+          'email': 'user@example.com',
+          'phone': '010-0000-0000'
+        },
+        'sandbox': true // 샌드박스 모드 활성화
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      if (jsonResponse['data'] != null && jsonResponse['data']['payment_url'] != null) {
+        setState(() {
+          paymentUrl = jsonResponse['data']['payment_url'];
+        });
+      } else {
+        print('Failed to initiate payment: Invalid response structure');
+      }
+    } else {
+      print('Failed to initiate payment: ${response.body}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return WebviewScaffold(
-      url: 'http://43.201.174.131:8080/payments/checkout?user_id=$userId',
+    return Scaffold(
       appBar: AppBar(
-        title: Text('결제하기'),
+        title: Text('Payment Page'),
       ),
-      withZoom: true,
-      withLocalStorage: true,
-      hidden: true,
-      initialChild: Center(
-        child: CircularProgressIndicator(),
+      body: paymentUrl.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : WebViewWidget(
+        controller: WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..loadRequest(Uri.parse(paymentUrl)),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _webviewPlugin.dispose();
-    super.dispose();
   }
 }
