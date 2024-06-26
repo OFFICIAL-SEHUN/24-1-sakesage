@@ -10,11 +10,11 @@ class DatabaseHelper {
   DatabaseHelper._internal();
 
   final ConnectionSettings settings = ConnectionSettings(
-    host: 'database-sakesage.c3suqkcwcjd4.ap-northeast-2.rds.amazonaws.com',
-    port: 3306,
-    user: 'admin',
-    password: 'tkzptkzptkrp24',
-    db: 'sakesage',
+    host: '',
+    port: ,
+    user: '',
+    password: '4',
+    db: '',
   );
 
   MySqlConnection? _connection;
